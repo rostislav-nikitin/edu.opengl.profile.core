@@ -5,6 +5,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "shader.hpp"
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
@@ -64,65 +66,6 @@ int main()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, GL_STATIC_DRAW);
 	
-	const char *vertex_shader_src = "#version 330 core\n"
-			"layout (location = 0) in vec3 in_pos;\n"
-			"layout (location = 1) in vec3 in_color;\n"
-			"out vec3 color;\n"
-			"void main()\n"
-			"{\n"
-			"	gl_Position = vec4(in_pos, 1.0);\n"
-			"	color = in_color;\n"
-			"}\n";
-
-	unsigned int vertex_shader_id;
-	vertex_shader_id = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(vertex_shader_id, 1, &vertex_shader_src, NULL);
-	glCompileShader(vertex_shader_id);
-
-	int compile_success;
-	char log_data[512];
-	glGetShaderiv(vertex_shader_id, GL_COMPILE_STATUS, &compile_success);
-	if(!compile_success)
-	{
-		glGetShaderInfoLog(vertex_shader_id, 512, NULL, log_data);
-		std::cout << log_data << std::endl;
-	}
-
-	const char *fragment_shader_src = "#version 330 core\n"
-		"out vec4 out_color;\n"
-		"in vec3 color;\n"
-		"void main()\n"
-		"{\n"
-		"	out_color = vec4(color, 1.0);\n"
-		"}\n";
-	unsigned int fragment_shader_id;
-	fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragment_shader_id, 1, &fragment_shader_src, NULL);
-	glCompileShader(fragment_shader_id);
-
-	glGetShaderiv(fragment_shader_id, GL_COMPILE_STATUS, &compile_success);
-	if(!compile_success)
-	{
-		glGetShaderInfoLog(fragment_shader_id, 512, NULL, log_data);
-		std::cout << log_data << std::endl;
-	}
-
-	unsigned int shader_program_id;
-	shader_program_id = glCreateProgram();
-	glAttachShader(shader_program_id, vertex_shader_id);
-	glAttachShader(shader_program_id, fragment_shader_id);
-	glLinkProgram(shader_program_id);
-
-	glGetProgramiv(shader_program_id, GL_COMPILE_STATUS, &compile_success);
-	if(!compile_success)
-	{
-		glGetProgramInfoLog(shader_program_id, 512, NULL, log_data);
-		std::cout << log_data << std::endl;
-	}
-
-	glDeleteShader(vertex_shader_id);
-	glDeleteShader(fragment_shader_id);
-
 	//std::cout << "sizeof(float)=" << sizeof(float) << std::endl;
 	//				AttNum, values
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void *>(0));
@@ -136,6 +79,9 @@ int main()
 	
 //	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	// Load & Compile Shaders
+	Shader shader("shaders/vertex.glsl", "shaders/fragment.glsl");
 
 	//DEBUG INFO
 	int attributes_count;
@@ -152,7 +98,7 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//   Render figures
-		glUseProgram(shader_program_id);
+		shader.use();
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
