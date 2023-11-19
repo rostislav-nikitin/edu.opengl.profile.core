@@ -67,9 +67,11 @@ int main()
 	
 	const char *vertex_shader_src = "#version 330 core\n"
 			"layout (location = 0) in vec3 pos;\n"
+			"out vec4 color;\n"
 			"void main()\n"
 			"{\n"
 			"	gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);\n"
+			"	color = vec4(0.5, 0.0, 0.0, 1.0);\n"
 			"}\n";
 
 	unsigned int vertex_shader_id;
@@ -87,10 +89,11 @@ int main()
 	}
 
 	const char *fragment_shader_src = "#version 330 core\n"
-		"out vec4 color;\n"
+		"in vec4 color;\n"
+		"out vec4 out_color;\n"
 		"void main()\n"
 		"{\n"
-		"	color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+		"	out_color = color;\n"
 		"}\n";
 	unsigned int fragment_shader_id;
 	fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
@@ -131,6 +134,11 @@ int main()
 	
 //	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	//DEBUG INFO
+	int attributes_count;
+	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &attributes_count);
+	std::cout << attributes_count << std::endl;
 
 	while(!glfwWindowShouldClose(window))
 	{
