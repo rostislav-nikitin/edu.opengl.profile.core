@@ -37,16 +37,14 @@ int main()
 	// Prepare data
 	float vertices[] = 
 	{
-		 0.5f,	 0.5f,	0.0f,
-		 0.5f,	-0.5f,	0.0f,
-		-0.5f,	-0.5f,	0.0f,
-		-0.5f,   0.5f,	0.0f
+		 0.5f,	-0.5f,	0.0f,	1.0f,	0.0f,	0.0f,
+		-0.5f,	-0.5f,	0.0f,	0.0f,	1.0f,	0.0f,
+		 0.0f,	 0.5f,	0.0f,	0.0f,	0.0f,	1.0f
 	};
 
 	unsigned int indicies[] = 
 	{
-		0, 1, 3, // first triangle
-		1, 2, 3  // second triangle
+		0, 1, 2 // first triangle
 	};
 
 	// VAO (Vertex Array Object) (Handle to VBO and VertexAttributes)
@@ -67,10 +65,13 @@ int main()
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indicies), indicies, GL_STATIC_DRAW);
 	
 	const char *vertex_shader_src = "#version 330 core\n"
-			"layout (location = 0) in vec3 pos;\n"
+			"layout (location = 0) in vec3 in_pos;\n"
+			"layout (location = 1) in vec3 in_color;\n"
+			"out vec3 color;\n"
 			"void main()\n"
 			"{\n"
-			"	gl_Position = vec4(pos.x, pos.y, pos.z, 1.0);\n"
+			"	gl_Position = vec4(in_pos, 1.0);\n"
+			"	color = in_color;\n"
 			"}\n";
 
 	unsigned int vertex_shader_id;
@@ -89,10 +90,10 @@ int main()
 
 	const char *fragment_shader_src = "#version 330 core\n"
 		"out vec4 out_color;\n"
-		"uniform vec4 in_color;\n"
+		"in vec3 color;\n"
 		"void main()\n"
 		"{\n"
-		"	out_color = in_color;\n"
+		"	out_color = vec4(color, 1.0);\n"
 		"}\n";
 	unsigned int fragment_shader_id;
 	fragment_shader_id = glCreateShader(GL_FRAGMENT_SHADER);
@@ -124,8 +125,10 @@ int main()
 
 	//std::cout << "sizeof(float)=" << sizeof(float) << std::endl;
 	//				AttNum, values
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), reinterpret_cast<void *>(0));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void *>(0));
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -148,17 +151,11 @@ int main()
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		glUseProgram(shader_program_id);
 		//   Render figures
-		float time_value = glfwGetTime();
-		float green_value = (sin(time_value) / 2.f) + 0.5f;
-		int vertex_color_location = glGetUniformLocation(shader_program_id, "in_color");
-		std::cout << "green_value=" << green_value << "\tvertex_color_location=" << vertex_color_location <<std::endl;
-		glUniform4f(vertex_color_location, 0.0f, green_value, 0.0f, 0.0f);
-
+		glUseProgram(shader_program_id);
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
 		
 
 		// Swap & Poll events
