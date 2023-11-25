@@ -5,6 +5,8 @@
 
 #include <GLFW/glfw3.h>
 
+#include "stb_image/stb_image.h"
+
 #include "shader.hpp"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -39,15 +41,43 @@ int main()
 	// Prepare data
 	float vertices[] = 
 	{
-		 0.5f,	-0.5f,	0.0f,	1.0f,	0.0f,	0.0f,
-		-0.5f,	-0.5f,	0.0f,	0.0f,	1.0f,	0.0f,
-		 0.0f,	 0.5f,	0.0f,	0.0f,	0.0f,	1.0f
+	//v| x		 y		z		r		g		b		s		t
+		 0.5f, 	 0.5f,	0.0f,	1.0f,	0.0f,	0.0f, 	1.0f, 	1.0f,
+		 0.5f,	-0.5f,	0.0f,	0.0f,	1.0f,	0.0f, 	1.0f, 	0.0f,
+		-0.5f,	-0.5f,	0.0f,	0.0f,	0.0f,	1.0f, 	0.0f,	0.0f,
+		-0.5f,	 0.5f,	0.0f,	1.0f,	1.0f,	0.0f,	0.0f,	1.0f
 	};
 
 	unsigned int indicies[] = 
 	{
-		0, 1, 2 // first triangle
+		0, 1, 3,// first triangle
+		1, 2, 3 // second triange
 	};
+
+	// Init texture
+
+
+	unsigned int tex;
+	glGenTextures(1, &tex);
+	glBindTexture(GL_TEXTURE_2D, tex);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	int tex_width, tex_height, tex_channels;
+	unsigned char *tex_data = stbi_load("textures/container.jpg", &tex_width, &tex_height, &tex_channels, 0); 
+	if(tex_data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_width, tex_height, 0, GL_RGB, GL_UNSIGNED_BYTE, tex_data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+
+	stbi_image_free(tex_data);
 
 	// VAO (Vertex Array Object) (Handle to VBO and VertexAttributes)
 	unsigned int VAO;
@@ -68,10 +98,12 @@ int main()
 	
 	//std::cout << "sizeof(float)=" << sizeof(float) << std::endl;
 	//				AttNum, values
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void *>(0));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(0));
 	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), reinterpret_cast<void *>(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -99,9 +131,11 @@ int main()
 
 		//   Render figures
 		shader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, tex);
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, 0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 
 		// Swap & Poll events
