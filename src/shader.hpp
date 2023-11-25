@@ -13,7 +13,7 @@ private:
     unsigned int _program_id;
 public:
     unsigned int get_program_id();
-    void set_program_id(unsigned int value);
+    //void set_program_id(unsigned int value);
 
     Shader(std::string const &vertex_path, std::string const &fragment_path);
     void use();
@@ -96,6 +96,11 @@ Shader::Shader(std::string const &vertex_path, std::string const &fragment_path)
         std::cerr << "ERROR::SHADER::FILEN_NOT_SUCCESSFULLY_READ" << ex.what() << std::endl;
     }
     
+}
+
+unsigned int Shader::get_program_id()
+{
+    return _program_id;
 }
 
 void Shader::use()

@@ -56,6 +56,7 @@ int main()
 
 	// Init texture
 
+	stbi_set_flip_vertically_on_load(true);
 
 	unsigned int tex;
 	glGenTextures(1, &tex);
@@ -76,8 +77,27 @@ int main()
 	{
 		std::cout << "Failed to load texture" << std::endl;
 	}
-
 	stbi_image_free(tex_data);
+
+	unsigned int tex_face;
+	glGenTextures(1, &tex_face);
+	glBindTexture(GL_TEXTURE_2D, tex_face);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	int tex_face_width, tex_face_height, tex_face_channels;
+	unsigned char *tex_face_data = stbi_load("textures/awesomeface.png", &tex_face_width, &tex_face_height, &tex_face_channels, 0);
+	if(tex_face_data)
+	{
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_face_width, tex_face_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_face_data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		std::cout << "Failed to load texture" << std::endl;
+	}
+	stbi_image_free(tex_face_data);
 
 	// VAO (Vertex Array Object) (Handle to VBO and VertexAttributes)
 	unsigned int VAO;
@@ -120,6 +140,12 @@ int main()
 	glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &attributes_count);
 	std::cout << attributes_count << std::endl;
 
+	shader.use();
+	//glUniform1i(glGetUniformLocation(shader.get_program_id(), "tex_box"), 0); // set it manually
+	//glUniform1i(glGetUniformLocation(shader.get_program_id(), "tex_face"), 1); // set it manually
+	shader.set_uniform("tex_box", 0); // or with shader class
+	shader.set_uniform("tex_face", 1); // or with shader class
+
 	while(!glfwWindowShouldClose(window))
 	{
 		// Check user inputs
@@ -130,9 +156,14 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		//   Render figures
-		shader.use();
+		
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, tex);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, tex_face);
+
 		glBindVertexArray(VAO);
 		//glDrawArrays(GL_TRIANGLES, 0, 6);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
