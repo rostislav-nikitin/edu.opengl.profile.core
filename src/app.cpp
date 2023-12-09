@@ -3,9 +3,14 @@
 
 #include <glad/glad.h>
 
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <GLFW/glfw3.h>
 
 #include "stb_image/stb_image.h"
+
 
 #include "shader.hpp"
 
@@ -14,6 +19,18 @@ void processInput(GLFWwindow *window);
 
 int main()
 {
+	//GLM test
+	/*
+	glm::vec4 vec(1.f, 0.f, 0.f, 1.f);
+	glm::mat4 trans = glm::mat4(1.f);
+	trans = glm::translate(trans, glm::vec3(1.f, 1.f, 0.f));
+	vec = trans * vec;
+	
+	
+	std::cout << "x=" << vec.x << "y=" << vec.y << "z=" << vec.z << std::endl;
+	*/
+	//~GLM test
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -145,6 +162,8 @@ int main()
 	//glUniform1i(glGetUniformLocation(shader.get_program_id(), "tex_face"), 1); // set it manually
 	shader.set_uniform("tex_box", 0); // or with shader class
 	shader.set_uniform("tex_face", 1); // or with shader class
+	
+
 
 	while(!glfwWindowShouldClose(window))
 	{
@@ -169,6 +188,14 @@ int main()
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		
 
+	// Init transforms
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+	trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+	//trans = glm::scale(trans, glm::vec3(0.5f, 0.5f, 0.5f));
+
+	unsigned int transformLoc = glGetUniformLocation(shader.get_program_id(), "transform");
+	glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 		// Swap & Poll events
 		glfwSwapBuffers(window);
 		glfwPollEvents();
