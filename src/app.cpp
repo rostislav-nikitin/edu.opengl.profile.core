@@ -257,14 +257,16 @@ int main()
 
 		// Coordinate system transforms
 
+/*
 		glm::mat4 view = glm::mat4(1.0f);
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -6.0f + zoom));
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -6.0f + zoom));`
 		view = glm::rotate(view, glm::radians(-25.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
 		unsigned int view_uniform_loc = glGetUniformLocation(shader.get_program_id(), "view");
 		glUniformMatrix4fv(view_uniform_loc, 1.0, GL_FALSE, glm::value_ptr(view));
-
+*/
 		glm::mat4 projection;
-		projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 100.f);
+		projection = glm::perspective(glm::radians(45.0f), 1920.0f/1080.0f, 0.1f, 100.f);
 		unsigned int projection_uniform_loc = glGetUniformLocation(shader.get_program_id(), "projection");
 		glUniformMatrix4fv(projection_uniform_loc, 1.0f, GL_FALSE, glm::value_ptr(projection));
 
@@ -278,6 +280,15 @@ int main()
 			model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 			unsigned int model_uniform_loc = glGetUniformLocation(shader.get_program_id(), "model");
 			glUniformMatrix4fv(model_uniform_loc, 1, GL_FALSE, glm::value_ptr(model));
+
+		
+			float radius = 10.0f;
+			float pos_x = radius * cos(glfwGetTime()); 
+			float pos_z = radius * sin(glfwGetTime()); 
+			glm::mat4 view;
+			view = glm::lookAt(glm::vec3(pos_x, 0.0, pos_z + zoom), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0, 1.0, 0.0));
+			unsigned int view_uniform_loc = glGetUniformLocation(shader.get_program_id(), "view");
+			glUniformMatrix4fv(view_uniform_loc, 1.0, GL_FALSE, glm::value_ptr(view));
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
@@ -306,5 +317,5 @@ void processInput(GLFWwindow *window)
 	if(glfwGetKey(window, GLFW_KEY_EQUAL) == GLFW_PRESS)
 		zoom += 0.1f;
 	if(glfwGetKey(window, GLFW_KEY_MINUS) == GLFW_PRESS)
-		zoom-= 0.1f;
+		zoom -= 0.1f;
 }
